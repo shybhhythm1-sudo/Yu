@@ -12,8 +12,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <title>المُصحف — قراءة القرآن الكريم</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C6A15B' stroke-width='2'%3E%3Crect width='24' height='24' rx='5' fill='%231B2A4A'/%3E%3Cpath d='M5 18V6a1.5 1.5 0 0 1 1.5-1.5h11A.5.5 0 0 1 18 5v13'/%3E%3Cpath d='M5 18a1.5 1.5 0 0 0 1.5 1.5h10'/%3E%3Cpath d='M5 18a1.5 1.5 0 0 1 1.5-1.5h10'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C6A15B' stroke-width='1.6'%3E%3Crect width='24' height='24' rx='5' fill='%231B2A4A'/%3E%3Cpath d='M5 18V6a1.5 1.5 0 0 1 1.5-1.5h11A.5.5 0 0 1 18 5v13'/%3E%3Cpath d='M5 18a1.5 1.5 0 0 0 1.5 1.5h10'/%3E%3Cpath d='M5 18a1.5 1.5 0 0 1 1.5-1.5h10'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Reem+Kufi:wght@400..700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -218,6 +220,10 @@
   .menu-row .chevron{ color:var(--charcoal-soft); flex:none; }
   body.night .menu-row .chevron{ color:var(--night-soft); }
   .count-pill{ background:var(--gold); color:var(--ink); font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; }
+  .status-pill{ font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; }
+  .status-pill.on{ background:rgba(14,92,80,.15); color:var(--teal); }
+  .status-pill.off{ background:rgba(181,69,58,.12); color:#b5453a; }
+  body.night .status-pill.on{ background:rgba(198,161,91,.18); color:var(--gold-light); }
 
   .settings-section{ margin:16px 0; padding-top:16px; border-top:1px dashed rgba(198,161,91,.4); }
   .settings-section h3{ font-family:'Reem Kufi',sans-serif; font-size:13.5px; color:var(--teal); margin:0 0 10px; display:flex; align-items:center; gap:7px; }
@@ -333,6 +339,17 @@
   body.night .bm-item .bm-text{ color:var(--night-soft); }
   .bm-item .bm-remove{ flex:none; background:none; border:none; color:var(--charcoal-soft); cursor:pointer; padding:4px; }
   .bm-item .bm-remove:hover{ color:#b5453a; }
+
+  /* install banner */
+  .install-banner{ position:fixed; left:50%; top:calc(10px + env(safe-area-inset-top)); transform:translateX(-50%) translateY(-140%); width:min(520px,94vw); background:linear-gradient(135deg, var(--ink), #16233d); border:1px solid var(--gold); border-radius:16px; padding:12px 14px; display:flex; align-items:center; gap:12px; box-shadow:0 14px 34px rgba(15,25,45,.3); color:var(--parchment); z-index:96; transition: transform .4s cubic-bezier(.4,0,.2,1); }
+  .install-banner.show{ transform:translateX(-50%) translateY(0); }
+  .install-banner .ib-icon{ width:40px; height:40px; border-radius:11px; flex:none; overflow:hidden; }
+  .install-banner .ib-icon img{ width:100%; height:100%; display:block; }
+  .install-banner .ib-text{ flex:1; min-width:0; }
+  .install-banner .ib-title{ font-family:'Reem Kufi',sans-serif; font-size:13.5px; }
+  .install-banner .ib-sub{ font-size:11px; color:#cfc4a5; margin-top:1px; }
+  .install-banner .ib-btn{ background:var(--gold); color:var(--ink); border:none; border-radius:10px; padding:8px 14px; font-family:'Cairo',sans-serif; font-size:12.5px; font-weight:700; cursor:pointer; flex:none; }
+  .install-banner .ib-close{ flex:none; background:none; border:none; color:#cfc4a5; cursor:pointer; padding:4px; }
 </style>
 </head>
 <body>
@@ -464,6 +481,19 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- INSTALL APP BANNER -->
+<div class="install-banner" id="installBanner">
+  <div class="ib-icon"><img src="icon-192.png" alt="أيقونة المُصحف"></div>
+  <div class="ib-text">
+    <div class="ib-title">ثبّت تطبيق المُصحف</div>
+    <div class="ib-sub">تثبيت حقيقي على شاشتك — يفتح كتطبيق مستقل بدون شريط المتصفح</div>
+  </div>
+  <button class="ib-btn" id="installBtn">تثبيت</button>
+  <button class="ib-close" id="installClose" aria-label="إغلاق">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+</div>
+
 <!-- SETTINGS MENU -->
 <div class="modal-wrap" id="settingsModal">
   <div class="modal-backdrop" id="modalBackdrop"></div>
@@ -473,6 +503,17 @@
       <button class="modal-close" id="modalClose" aria-label="إغلاق الإعدادات">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
+    </div>
+
+    <div class="menu-row" id="installMenuRow">
+      <div class="mi">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      </div>
+      <div class="mt">
+        <div class="m1">تثبيت التطبيق على الشاشة الرئيسية</div>
+        <div class="m2" id="installMenuSub">تطبيق مستقل حقيقي — لا يحتاج فتح متصفح</div>
+      </div>
+      <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
     </div>
 
     <div class="menu-row" id="openPrayerPageBtn">
@@ -495,6 +536,21 @@
         <div class="m2">آياتك المفضّلة اللي حفظتها للرجوع إليها</div>
       </div>
       <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </div>
+
+    <div class="settings-section">
+      <h3>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        الإشعارات
+      </h3>
+      <div class="row">
+        <span class="row-label">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          تنبيه أوقات الصلاة بإشعار الهاتف
+        </span>
+        <span class="status-pill" id="notifStatusPill">—</span>
+      </div>
+      <button class="btn-gold" id="enableNotifBtn" style="margin-top:4px;">تفعيل إشعارات الهاتف</button>
     </div>
 
     <div class="settings-section">
@@ -623,13 +679,13 @@
     <div style="width:56px; height:56px; border-radius:16px; background:rgba(14,92,80,.1); color:var(--teal); display:flex; align-items:center; justify-content:center; margin:4px auto 14px;">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V10l7-6 7 6v11M9 21v-7h6v7"/><path d="M12 4V2"/></svg>
     </div>
-    <h2 style="text-align:center; margin-bottom:8px;">تفعيل صوت الأذان</h2>
+    <h2 style="text-align:center; margin-bottom:8px;">تفعيل صوت الأذان والإشعارات</h2>
     <p style="font-size:13px; color:var(--charcoal-soft); line-height:1.8; margin:0 0 18px;">
-      البرنامج هيأذّن تلقائيًا لما يجي وقت الصلاة. المتصفح بيحتاج منك تسمع الصوت مرة واحدة الأول عشان يسمح بالتشغيل التلقائي بعد كده.
+      البرنامج هيأذّن تلقائيًا لما يجي وقت الصلاة، وهيبعتلك إشعار في شريط إشعارات الهاتف. المتصفح بيحتاج منك تسمع الصوت مرة واحدة وتوافق على الإشعارات الأول.
     </p>
     <button class="btn-gold" id="adhanTestBtn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      تجربة صوت الأذان الآن
+      تجربة الصوت وتفعيل الإشعارات
     </button>
     <button class="modal-close" id="adhanSkipBtn" style="width:auto; margin:12px auto 0; font-size:12.5px; color:var(--charcoal-soft); display:flex; gap:0;">لاحقًا</button>
   </div>
@@ -680,7 +736,9 @@
    "adhanAudio","adhanBanner","adhanPrayerName","adhanStopBtn",
    "adhanOnboarding","adhanTestBtn","adhanSkipBtn","ayahOfDayWrap",
    "sidebarTitle","tabSurahs","tabJuz","tabQSearch","surahFilterBar","juzList",
-   "qsearchPane","qsearchInput","qsearchBtn","qsearchResults"
+   "qsearchPane","qsearchInput","qsearchBtn","qsearchResults",
+   "installBanner","installBtn","installClose","installMenuRow","installMenuSub",
+   "notifStatusPill","enableNotifBtn"
   ].forEach(id => els[id] = document.getElementById(id));
 
   const ADHAN_URL = "https://cdn.aladhan.com/audio/adhans/a9.mp3";
@@ -744,10 +802,124 @@
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[key]||''}</svg>`;
   }
 
+  // ================= PWA: تسجيل Service Worker (للتثبيت + العمل بدون إنترنت + الإشعارات) =================
+  let swRegistration = null;
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').then((reg)=>{
+        swRegistration = reg;
+        // محاولة تسجيل مزامنة دورية (تعمل فقط على Chrome/Android بعد التثبيت الفعلي)
+        if('periodicSync' in reg){
+          navigator.permissions.query({name:'periodic-background-sync'}).then((status)=>{
+            if(status.state === 'granted'){
+              reg.periodicSync.register('quran-prayer-check', { minInterval: 60*60*1000 }).catch(()=>{});
+            }
+          }).catch(()=>{});
+        }
+      }).catch(()=>{ /* تجاهل بصمت لو المتصفح لا يدعم SW */ });
+    });
+  }
+
+  // ================= PWA: زر التثبيت الحقيقي (Add to Home Screen) =================
+  let deferredInstallPrompt = null;
+  const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if(!isStandalone() && localStorage.getItem('qr_install_dismissed') !== '1'){
+      els.installBanner.classList.add('show');
+    }
+    els.installMenuSub.textContent = 'اضغط لتثبيت التطبيق الآن على شاشتك الرئيسية';
+  });
+
+  async function triggerInstall(){
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      els.installBanner.classList.remove('show');
+      if(choice && choice.outcome === 'accepted'){
+        toast('جاري تثبيت التطبيق…');
+      }
+    }else if(/iphone|ipad|ipod/i.test(navigator.userAgent)){
+      toast('على آيفون: اضغط زر المشاركة ثم "إضافة إلى الشاشة الرئيسية"');
+    }else{
+      toast('التطبيق مثبّت بالفعل أو متصفحك لا يدعم التثبيت المباشر');
+    }
+  }
+  els.installBtn.addEventListener('click', triggerInstall);
+  els.installMenuRow.addEventListener('click', triggerInstall);
+  els.installClose.addEventListener('click', ()=>{
+    els.installBanner.classList.remove('show');
+    localStorage.setItem('qr_install_dismissed', '1');
+  });
+  window.addEventListener('appinstalled', ()=>{
+    els.installBanner.classList.remove('show');
+    toast('تم تثبيت التطبيق بنجاح 🎉');
+  });
+  if(isStandalone()){
+    els.installMenuSub.textContent = 'التطبيق مثبّت بالفعل ✓';
+  }
+
+  // ================= الإشعارات (Notification API + Service Worker) =================
+  function updateNotifStatusUI(){
+    if(!('Notification' in window)){
+      els.notifStatusPill.textContent = 'غير مدعوم';
+      els.notifStatusPill.className = 'status-pill off';
+      els.enableNotifBtn.style.display = 'none';
+      return;
+    }
+    const perm = Notification.permission;
+    if(perm === 'granted'){
+      els.notifStatusPill.textContent = 'مفعّلة ✓';
+      els.notifStatusPill.className = 'status-pill on';
+      els.enableNotifBtn.textContent = 'إعادة اختبار الإشعار';
+    }else if(perm === 'denied'){
+      els.notifStatusPill.textContent = 'محظورة من المتصفح';
+      els.notifStatusPill.className = 'status-pill off';
+      els.enableNotifBtn.textContent = 'مسموحة من إعدادات المتصفح فقط';
+    }else{
+      els.notifStatusPill.textContent = 'غير مفعّلة';
+      els.notifStatusPill.className = 'status-pill off';
+      els.enableNotifBtn.textContent = 'تفعيل إشعارات الهاتف';
+    }
+  }
+  async function requestNotifPermission(){
+    if(!('Notification' in window)){ toast('متصفحك لا يدعم الإشعارات'); return; }
+    if(Notification.permission === 'granted'){
+      sendLocalNotification('المُصحف', 'تم تفعيل الإشعارات بنجاح — هتوصلك تنبيهات أوقات الصلاة هنا.', false);
+      updateNotifStatusUI();
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    updateNotifStatusUI();
+    if(perm === 'granted'){
+      sendLocalNotification('المُصحف', 'تم تفعيل الإشعارات بنجاح — هتوصلك تنبيهات أوقات الصلاة هنا.', false);
+    }else{
+      toast('تم رفض إذن الإشعارات من المتصفح');
+    }
+  }
+  els.enableNotifBtn.addEventListener('click', requestNotifPermission);
+
+  // إرسال إشعار حقيقي يظهر في شريط إشعارات الهاتف عبر الـ Service Worker،
+  // مع رجوع لطريقة بديلة (new Notification) لو الـ SW لسه مش جاهز.
+  function sendLocalNotification(title, body, requireInteraction){
+    if(!('Notification' in window) || Notification.permission !== 'granted') return;
+    if(swRegistration && swRegistration.active){
+      swRegistration.active.postMessage({ type:'SHOW_NOTIFICATION', title, body, requireInteraction: !!requireInteraction, tag:'quran-notif' });
+    }else if(navigator.serviceWorker && navigator.serviceWorker.controller){
+      navigator.serviceWorker.controller.postMessage({ type:'SHOW_NOTIFICATION', title, body, requireInteraction: !!requireInteraction, tag:'quran-notif' });
+    }else{
+      try{ new Notification(title, { body, icon:'icon-192.png' }); }catch(e){}
+    }
+  }
+
   // ---------- init ----------
   applyPrefs();
   loadSurahList();
   updateBookmarkCount();
+  updateNotifStatusUI();
   initAdhan();
 
   function applyPrefs(){
@@ -975,7 +1147,7 @@
   });
 
   // ---------- settings modal ----------
-  function openSettings(){ updateBookmarkCount(); els.settingsModal.classList.add('show'); }
+  function openSettings(){ updateBookmarkCount(); updateNotifStatusUI(); els.settingsModal.classList.add('show'); }
   function closeSettings(){ els.settingsModal.classList.remove('show'); }
   els.settingsToggle.addEventListener('click', openSettings);
   els.modalClose.addEventListener('click', closeSettings);
@@ -1106,6 +1278,7 @@
       els.adhanAudio.play().then(()=>{
         toast('جاري تشغيل الأذان — تم تفعيل التشغيل التلقائي');
       }).catch(()=> toast('تعذّر تشغيل الصوت، حاول مرة أخرى'));
+      requestNotifPermission();
       els.adhanOnboarding.classList.remove('show');
     });
     els.adhanSkipBtn.addEventListener('click', ()=>{
@@ -1113,6 +1286,14 @@
       els.adhanOnboarding.classList.remove('show');
     });
     els.adhanStopBtn.addEventListener('click', stopAdhan);
+
+    // إبقاء التطبيق يعمل ويحسب الوقت أطول ما يمكن حتى وهو في الخلفية
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'visible' && prayerCtx.timings){
+        // إعادة مزامنة العدّاد لما المستخدم يرجع للتطبيق بعد ما كان في الخلفية
+        startCountdown();
+      }
+    });
   }
 
   function isAdhanEnabled(){
@@ -1124,6 +1305,14 @@
     els.adhanPrayerName.textContent = PRAYER_LABELS[key] || '';
     els.adhanAudio.src = ADHAN_URL;
     const p = els.adhanAudio.play();
+
+    // إشعار حقيقي في شريط إشعارات الهاتف بغض النظر عن نجاح تشغيل الصوت
+    sendLocalNotification(
+      'حان الآن وقت صلاة ' + (PRAYER_LABELS[key]||''),
+      'الله أكبر، الله أكبر — لا إله إلا الله',
+      true
+    );
+
     if(p && p.catch){
       p.then(()=>{
         els.adhanBanner.classList.add('show');
@@ -1155,12 +1344,12 @@
   els.prayerBack.addEventListener('click', closePrayerPage);
   function closePrayerPage(){
     els.prayerPage.classList.remove('open');
-    // countdown keeps running in the background so the adhan can still trigger on time
+    // العدّاد فاضل شغال في الخلفية عشان الأذان يفضل يشتغل في وقته
   }
   els.prayerRefresh.addEventListener('click', ()=> autoDetectAndLoad(true));
 
-  // silently fetch prayer times in the background as soon as the app opens,
-  // so the countdown/adhan works even if the user never opens the prayer page
+  // نجيب أوقات الصلاة تلقائيًا في الخلفية بمجرد فتح التطبيق،
+  // عشان العدّاد والأذان يشتغلوا حتى لو المستخدم مفتحش صفحة الصلاة نفسها
   autoDetectAndLoad(false);
 
   function renderPrayerLoading(msg){
@@ -1422,7 +1611,17 @@
         const pct = Math.min(100, Math.max(0, ((now - prevMs) / (targetMs - prevMs)) * 100));
         pf.style.width = pct + '%';
       }
-      if(diff <= 500){ playAdhan(key); renderPrayerPage(); startCountdown(); }
+      // تذكير قبل الصلاة بعشر دقايق (إشعار هادئ، من غير صوت أذان)
+      if(diff > 0 && diff <= 600500 && diff > 599500 && !prayerCtx._reminded){
+        prayerCtx._reminded = key;
+        sendLocalNotification('اقترب وقت صلاة ' + (PRAYER_LABELS[key]||''), 'باقي 10 دقايق على أذان ' + (PRAYER_LABELS[key]||'') + '.', false);
+      }
+      if(diff <= 500){
+        prayerCtx._reminded = null;
+        playAdhan(key);
+        renderPrayerPage();
+        startCountdown();
+      }
     }
   }
 
