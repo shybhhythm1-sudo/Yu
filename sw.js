@@ -59,11 +59,13 @@ self.addEventListener('message', (event) => {
       badge: 'icon-192.png',
       dir: 'rtl',
       lang: 'ar',
-      vibrate: [200, 100, 200],
+      // نمط اهتزاز مميز وقت الأذان نفسه (أطول من التذكير العادي)، يتحدد من الصفحة
+      vibrate: Array.isArray(data.vibrate) ? data.vibrate : [200, 100, 200],
+      silent: false, // يطلب من النظام تشغيل صوت الإشعار الافتراضي (المتصفح لا يدعم صوت mp3 مخصص داخل الإشعار نفسه)
       tag: data.tag || 'quran-app-notif',
       renotify: true,
       requireInteraction: !!data.requireInteraction,
-      data: { url: data.url || './index.html' }
+      data: { url: data.url || './index.html', isAdhan: !!data.isAdhan }
     };
     event.waitUntil(self.registration.showNotification(title, options));
   }
@@ -90,8 +92,10 @@ self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'quran-prayer-check') {
     event.waitUntil(
       self.registration.showNotification('المُصحف', {
-        body: 'تفقّد مواقيت الصلاة الجديدة — افتح التطبيق لمتابعة العدّاد.',
+        body: 'افتح التطبيق الآن — لو فاتك وقت أذان قريب هيشغّله لك التطبيق فورًا.',
         icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        vibrate: [150, 80, 150],
         tag: 'periodic-check'
       })
     );

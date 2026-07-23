@@ -904,14 +904,18 @@
 
   // إرسال إشعار حقيقي يظهر في شريط إشعارات الهاتف عبر الـ Service Worker،
   // مع رجوع لطريقة بديلة (new Notification) لو الـ SW لسه مش جاهز.
-  function sendLocalNotification(title, body, requireInteraction){
+  function sendLocalNotification(title, body, requireInteraction, opts){
     if(!('Notification' in window) || Notification.permission !== 'granted') return;
+    const vibrate = (opts && opts.vibrate) || [200,100,200];
+    const isAdhan = !!(opts && opts.isAdhan);
+    const tag = (opts && opts.tag) || 'quran-notif';
+    const payload = { type:'SHOW_NOTIFICATION', title, body, requireInteraction: !!requireInteraction, tag, vibrate, isAdhan };
     if(swRegistration && swRegistration.active){
-      swRegistration.active.postMessage({ type:'SHOW_NOTIFICATION', title, body, requireInteraction: !!requireInteraction, tag:'quran-notif' });
+      swRegistration.active.postMessage(payload);
     }else if(navigator.serviceWorker && navigator.serviceWorker.controller){
-      navigator.serviceWorker.controller.postMessage({ type:'SHOW_NOTIFICATION', title, body, requireInteraction: !!requireInteraction, tag:'quran-notif' });
+      navigator.serviceWorker.controller.postMessage(payload);
     }else{
-      try{ new Notification(title, { body, icon:'icon-192.png' }); }catch(e){}
+      try{ new Notification(title, { body, icon:'icon-192.png', vibrate, silent:false }); }catch(e){}
     }
   }
 
@@ -1292,6 +1296,8 @@
       if(document.visibilityState === 'visible' && prayerCtx.timings){
         // إعادة مزامنة العدّاد لما المستخدم يرجع للتطبيق بعد ما كان في الخلفية
         startCountdown();
+        // لو رجع بعد ما فاته وقت الأذان (مثلاً بعد ما دوس على الإشعار)، شغّل الأذان فورًا
+        checkMissedAdhan();
       }
     });
   }
@@ -1300,17 +1306,78 @@
     return localStorage.getItem('qr_adhan_enabled') !== '0';
   }
 
-  function playAdhan(key){
+  // ---------- تتبّع الصلوات اللي اتأذّن لها اليوم (عشان "التعويض" لو التطبيق كان مقفول وقت الأذان) ----------
+  const ADHAN_PRAYERS = ['Fajr','Dhuhr','Asr','Maghrib','Isha']; // الشروق مش صلاة، مفيش أذان ليها
+  function todayStr(){
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  }
+  function getPlayedMap(){
+    try{
+      const raw = localStorage.getItem('qr_adhan_played');
+      const obj = raw ? JSON.parse(raw) : {};
+      return obj.day === todayStr() ? obj : { day: todayStr(), keys:{} };
+    }catch(e){ return { day: todayStr(), keys:{} }; }
+  }
+  function markPrayerPlayed(key){
+    const map = getPlayedMap();
+    map.keys[key] = true;
+    localStorage.setItem('qr_adhan_played', JSON.stringify(map));
+  }
+  function wasPrayerPlayed(key){
+    return !!getPlayedMap().keys[key];
+  }
+
+  // لو التطبيق كان مقفول/في الخلفية ووقت الأذان فات من شوية (لحد 10 دقايق)،
+  // بمجرد ما المستخدم يفتح التطبيق أو يدوس على الإشعار، الأذان يشتغل فورًا تعويضًا عن اللي فاته.
+  function checkMissedAdhan(){
+    if(!isAdhanEnabled() || !prayerCtx.timings) return;
+    const now = new Date();
+    const nowMs = now.getTime();
+    for(const key of ADHAN_PRAYERS){
+      if(wasPrayerPlayed(key)) continue;
+      const raw = (prayerCtx.timings[key]||'').split(' ')[0];
+      if(!raw) continue;
+      const [h,m] = raw.split(':').map(Number);
+      const t = new Date(now);
+      t.setHours(h, m, 0, 0);
+      const diff = nowMs - t.getTime();
+      if(diff >= 0 && diff <= 10*60000){
+        playAdhan(key, true);
+        break; // واحدة بس في نفس اللحظة كفاية
+      }
+    }
+  }
+
+  function playAdhan(key, isCatchUp){
     if(!isAdhanEnabled()) return;
+    markPrayerPlayed(key);
     els.adhanPrayerName.textContent = PRAYER_LABELS[key] || '';
     els.adhanAudio.src = ADHAN_URL;
     const p = els.adhanAudio.play();
 
-    // إشعار حقيقي في شريط إشعارات الهاتف بغض النظر عن نجاح تشغيل الصوت
+    // MediaSession: بيساعد الصوت يفضل شغّال في الخلفية/الشاشة المقفولة على أندرويد،
+    // وبيظهر عنصر تحكم بالأذان في شاشة القفل بدل ما يتوقف فجأة
+    if('mediaSession' in navigator){
+      try{
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: 'أذان ' + (PRAYER_LABELS[key]||''),
+          artist: 'المُصحف',
+          album: 'وقت الصلاة'
+        });
+        navigator.mediaSession.setActionHandler('stop', stopAdhan);
+      }catch(e){}
+    }
+
+    // إشعار حقيقي في شريط إشعارات الهاتف بغض النظر عن نجاح تشغيل الصوت.
+    // ملحوظة: متصفحات الهاتف (اندرويد/آيفون) ما بتسمحش لإشعارات الويب بتشغيل ملف mp3 مخصص
+    // كصوت للإشعار نفسه — دي قيود من نظام التشغيل مش من التطبيق. الإشعار هيهتز وهيطلع
+    // بصوت الإشعار الافتراضي بتاع الهاتف فورًا، والأذان الكامل بييجي من التطبيق نفسه.
     sendLocalNotification(
       'حان الآن وقت صلاة ' + (PRAYER_LABELS[key]||''),
-      'الله أكبر، الله أكبر — لا إله إلا الله',
-      true
+      isCatchUp ? 'أذان ' + (PRAYER_LABELS[key]||'') + ' — اضغط لتشغيله الآن' : 'الله أكبر، الله أكبر — لا إله إلا الله',
+      true,
+      { vibrate:[300,150,300,150,300,150,600], isAdhan:true, tag:'quran-adhan' }
     );
 
     if(p && p.catch){
@@ -1458,6 +1525,7 @@
 
       renderPrayerPage();
       startCountdown();
+      checkMissedAdhan();
     }catch(err){
       renderPrayerError('تعذّر جلب أوقات الصلاة. تحقق من الاتصال أو أدخل مدينتك يدويًا:');
     }
