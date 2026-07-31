@@ -371,56 +371,70 @@
   /* ============ Floating side "listen to full surah" widget ============ */
   .side-listen{
     position:fixed;
-    inset-inline-start:14px;
+    inset-inline-start:16px;
     top:50%;
-    transform:translateY(-50%) translateX(-14px);
+    transform:translateY(-50%) translateX(-22px) scale(.94);
     z-index:32;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:10px;
-    background:linear-gradient(165deg, var(--ink), #16233d);
-    border:1px solid var(--gold);
-    border-radius:20px;
-    padding:16px 10px;
-    box-shadow:0 16px 36px rgba(15,25,45,.32);
+    gap:12px;
+    background:linear-gradient(180deg, #1d2f52 0%, var(--ink) 45%, #101c33 100%);
+    border:1px solid rgba(198,161,91,.55);
+    outline:1px solid rgba(198,161,91,.18);
+    outline-offset:3px;
+    border-radius:999px;
+    padding:18px 10px;
+    box-shadow:0 18px 40px rgba(10,16,30,.4), inset 0 0 0 1px rgba(250,243,226,.03);
     opacity:0;
     pointer-events:none;
-    transition: opacity .35s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    transition: opacity .4s ease, transform .4s cubic-bezier(.34,1.3,.4,1);
   }
-  .side-listen.show{ opacity:1; pointer-events:auto; transform:translateY(-50%) translateX(0); }
-  body.night .side-listen{ background:linear-gradient(165deg,#0c1119,#0a0e15); border-color:#5c522c; }
+  .side-listen.show{ opacity:1; pointer-events:auto; transform:translateY(-50%) translateX(0) scale(1); }
+  body.night .side-listen{ background:linear-gradient(180deg,#141c2c 0%, #0c1119 45%, #080b12 100%); border-color:rgba(198,161,91,.45); outline-color:rgba(198,161,91,.12); }
+
+  .side-listen .sl-ornament{ width:14px; height:14px; opacity:.75; flex:none; }
+  .side-listen .sl-ornament svg{ width:100%; height:100%; }
+
+  .side-listen .sl-btn-wrap{ position:relative; width:60px; height:60px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .side-listen .sl-ring{ position:absolute; inset:0; transform:rotate(-90deg); }
+  .side-listen .sl-ring-bg{ fill:none; stroke:rgba(198,161,91,.22); stroke-width:2.5; }
+  .side-listen .sl-ring-fg{ fill:none; stroke:var(--gold-light); stroke-width:2.5; stroke-linecap:round; stroke-dasharray:175.9; stroke-dashoffset:175.9; transition: stroke-dashoffset .15s linear; }
   .side-listen .sl-btn{
-    width:52px; height:52px; border-radius:50%; border:none; cursor:pointer;
-    background:var(--gold); color:var(--ink); display:flex; align-items:center; justify-content:center;
+    position:absolute; inset:7px; border-radius:50%; border:none; cursor:pointer;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 65%); color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
     transition: transform .18s ease, box-shadow .18s ease; flex:none;
-    box-shadow:0 6px 16px rgba(198,161,91,.35);
+    box-shadow:0 6px 18px rgba(198,161,91,.4), inset 0 1px 2px rgba(255,255,255,.5);
   }
-  .side-listen .sl-btn:hover{ transform:scale(1.07); }
-  .side-listen .sl-btn:active{ transform:scale(.96); }
-  .side-listen .sl-btn.playing{ animation: slPulse 1.6s ease-in-out infinite; }
+  .side-listen .sl-btn:hover{ transform:scale(1.08); }
+  .side-listen .sl-btn:active{ transform:scale(.95); }
+  .side-listen .sl-btn.playing{ animation: slPulse 1.8s ease-in-out infinite; }
   @keyframes slPulse{
-    0%,100%{ box-shadow:0 6px 16px rgba(198,161,91,.35); }
-    50%{ box-shadow:0 6px 22px rgba(198,161,91,.7); }
+    0%,100%{ box-shadow:0 6px 18px rgba(198,161,91,.4), inset 0 1px 2px rgba(255,255,255,.5); }
+    50%{ box-shadow:0 6px 26px rgba(198,161,91,.8), inset 0 1px 2px rgba(255,255,255,.5); }
   }
+
   .side-listen .sl-label{
     writing-mode:vertical-rl; text-orientation:mixed;
     font-family:'Reem Kufi',sans-serif; font-size:12.5px; color:var(--gold-light);
-    letter-spacing:.5px; padding:2px 0; max-height:150px;
+    letter-spacing:.5px; padding:2px 0; max-height:170px;
   }
-  .side-listen .sl-divider{ width:26px; height:1px; background:rgba(198,161,91,.4); }
+  .side-listen .sl-divider{ display:flex; align-items:center; justify-content:center; width:100%; }
+  .side-listen .sl-diamond{ width:6px; height:6px; background:var(--gold); opacity:.65; transform:rotate(45deg); border-radius:1px; }
   .side-listen .sl-mini{
-    width:34px; height:34px; border-radius:10px; border:1px solid rgba(198,161,91,.45);
-    background:transparent; color:var(--parchment); cursor:pointer; display:flex;
+    width:32px; height:32px; border-radius:10px; border:1px solid rgba(198,161,91,.45);
+    background:rgba(250,243,226,.04); color:var(--parchment); cursor:pointer; display:flex;
     align-items:center; justify-content:center; transition:.18s; flex:none;
   }
-  .side-listen .sl-mini:hover{ background:rgba(198,161,91,.2); }
+  .side-listen .sl-mini:hover{ background:rgba(198,161,91,.2); transform:translateY(-1px); }
   .side-listen .sl-mini.active{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
   @media (max-width:600px){
-    .side-listen{ inset-inline-start:8px; padding:12px 7px; gap:8px; }
-    .side-listen .sl-btn{ width:44px; height:44px; }
-    .side-listen .sl-label{ font-size:11px; max-height:110px; }
-    .side-listen .sl-mini{ width:28px; height:28px; }
+    .side-listen{ inset-inline-start:8px; padding:14px 7px; gap:9px; }
+    .side-listen .sl-btn-wrap{ width:50px; height:50px; }
+    .side-listen .sl-label{ font-size:11px; max-height:130px; }
+    .side-listen .sl-mini{ width:27px; height:27px; }
+    .side-listen .sl-ornament{ width:11px; height:11px; }
   }
 </style>
 </head>
@@ -530,15 +544,33 @@
 
 <!-- FLOATING SIDE "LISTEN TO FULL SURAH" WIDGET -->
 <div class="side-listen" id="sideListen">
-  <button class="sl-mini" id="slRepeatBtn" title="تكرار السورة">
+  <div class="sl-ornament">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.4"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2Z"/></svg>
+  </div>
+
+  <button class="sl-mini" id="slRepeatBtn" title="تكرار السورة تلقائيًا">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
   </button>
-  <div class="sl-divider"></div>
-  <button class="sl-btn" id="sideListenBtn" title="استماع للسورة كاملة">
-    <svg id="slIcon" width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-  </button>
-  <div class="sl-divider"></div>
+
+  <div class="sl-divider"><span class="sl-diamond"></span></div>
+
+  <div class="sl-btn-wrap">
+    <svg class="sl-ring" viewBox="0 0 64 64">
+      <circle class="sl-ring-bg" cx="32" cy="32" r="28"></circle>
+      <circle class="sl-ring-fg" id="slRingFg" cx="32" cy="32" r="28"></circle>
+    </svg>
+    <button class="sl-btn" id="sideListenBtn" title="استماع للسورة كاملة">
+      <svg id="slIcon" width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+  </div>
+
+  <div class="sl-divider"><span class="sl-diamond"></span></div>
+
   <div class="sl-label" id="slLabel">استماع للسورة كاملة</div>
+
+  <div class="sl-ornament">
+    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.4"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2Z"/></svg>
+  </div>
 </div>
 
 <div class="player" id="player">
@@ -872,7 +904,7 @@
    "qsearchPane","qsearchInput","qsearchBtn","qsearchResults",
    "installBanner","installBtn","installClose","installMenuRow","installMenuSub",
    "notifStatusPill","enableNotifBtn","speedBtn","helpModal","helpModalClose","readingIndicator","keyboardHint",
-   "sideListen","sideListenBtn","slIcon","slLabel","slRepeatBtn"
+   "sideListen","sideListenBtn","slIcon","slLabel","slRepeatBtn","slRingFg"
   ].forEach(id => els[id] = document.getElementById(id));
 
   const ADHAN_URL = "https://cdn.aladhan.com/audio/adhans/a9.mp3";
@@ -1714,14 +1746,14 @@
     let targetDate, prevDate;
     if(next){
       targetDate = new Date(now);
-      targetDate.setHours(Math.floor(next.mins/60), Math.round(next.mins`), 0, 0);
+      targetDate.setHours(Math.floor(next.mins/60), Math.round(next.mins%60), 0, 0);
       prevDate = new Date(now);
       if(prevMins === null){
         const [h,m] = (t.Isha||'00:00').split(' ')[0].split(':').map(Number);
         prevDate.setDate(prevDate.getDate()-1);
         prevDate.setHours(h,m,0,0);
       }else{
-        prevDate.setHours(Math.floor(prevMins/60), Math.round(prevMins`), 0, 0);
+        prevDate.setHours(Math.floor(prevMins/60), Math.round(prevMins%60), 0, 0);
       }
     }else{
       next = {key:'Fajr'};
@@ -1807,8 +1839,8 @@
       const now = Date.now();
       const diff = Math.max(0, targetMs - now);
       const h = Math.floor(diff/3600000);
-      const m = Math.floor((diff600000)/60000);
-      const s = Math.floor((diff`000)/1000);
+      const m = Math.floor((diff%3600000)/60000);
+      const s = Math.floor((diff%60000)/1000);
       const el = document.getElementById('countdownTimer');
       if(el){
         el.innerHTML = `<span>${String(h).padStart(2,'0')}<span class="u">س</span></span><span>${String(m).padStart(2,'0')}<span class="u">د</span></span><span>${String(s).padStart(2,'0')}<span class="u">ث</span></span>`;
@@ -2052,6 +2084,7 @@
   els.audioEl.addEventListener('timeupdate', ()=>{
     if(!els.audioEl.duration) return;
     els.progFill.style.width = (els.audioEl.currentTime / els.audioEl.duration * 100) + '%';
+    updateSideListenRing();
   });
   els.progBar.addEventListener('click', (e)=>{
     const rect = els.progBar.getBoundingClientRect();
@@ -2087,6 +2120,21 @@
     return state.playing && playCtx.meta && state.currentMeta && playCtx.meta.number === state.currentMeta.number
       && playCtx.queue.length && playCtx.queue.length === (state.currentMeta.numberOfAyahs || playCtx.queue.length);
   }
+  const SL_RING_CIRC = 2 * Math.PI * 28; // r=28 in the SVG
+  function updateSideListenRing(){
+    if(!els.slRingFg) return;
+    let pct = 0;
+    if(isFullSurahContext() && playCtx.queue.length){
+      const perAyah = 1 / playCtx.queue.length;
+      const withinAyah = (els.audioEl.duration ? (els.audioEl.currentTime / els.audioEl.duration) : 0) * perAyah;
+      pct = Math.min(1, (playCtx.index * perAyah) + withinAyah);
+    }
+    els.slRingFg.style.strokeDashoffset = String(SL_RING_CIRC * (1 - pct));
+  }
+  function isFullSurahContext(){
+    return playCtx.meta && state.currentMeta && playCtx.meta.number === state.currentMeta.number
+      && playCtx.queue.length && playCtx.queue.length === (state.currentMeta.numberOfAyahs || playCtx.queue.length);
+  }
   function updateSideListenUI(){
     if(!els.sideListenBtn) return;
     const playingFull = isPlayingFullSurah();
@@ -2098,6 +2146,7 @@
     if(els.slRepeatBtn){
       els.slRepeatBtn.classList.toggle('active', playCtx.repeat === 'all');
     }
+    updateSideListenRing();
   }
   if(els.sideListenBtn){
     els.sideListenBtn.addEventListener('click', ()=>{
